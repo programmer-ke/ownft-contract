@@ -1,6 +1,6 @@
-## Ye-Old-Nft
+## OwnNFT Contract
 
-The Good Old NFTs you know and love.
+Upload your own NFT.
 
 
 ## Development
