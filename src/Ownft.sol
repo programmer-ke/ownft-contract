@@ -26,6 +26,7 @@ contract Ownft is ERC721Enumerable {
     }
 
     function tokenURI(uint256 tokenId) public view override returns (string memory) {
+        _requireOwned(tokenId);
         NftMetadata storage nftMetadata = s_tokenIdToNftMeta[tokenId];
         string memory nftName = string.concat(name(), " #", Strings.toString(tokenId));
         string memory encodedMetadata =

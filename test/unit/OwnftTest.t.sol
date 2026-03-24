@@ -61,4 +61,9 @@ contract OwnftTest is Test {
 
         assertEq(keccak256(bytes(tokenMetadataUri)), keccak256(bytes(expectedMetadataUri)));
     }
+
+    function testTokenURIRevertsIfTokenNotMinted() public {
+        vm.expectRevert();
+        ownft.tokenURI(1);
+    }
 }
