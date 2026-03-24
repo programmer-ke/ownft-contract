@@ -20,8 +20,8 @@ contract Ownft is ERC721Enumerable {
     constructor() ERC721("Ownft", "OFT") {}
 
     function mintNft(string calldata description, string calldata imageUri) public {
-        _safeMint(msg.sender, s_tokenCounter);
         s_tokenIdToNftMeta[s_tokenCounter] = NftMetadata({description: description, imageUri: imageUri});
+        _safeMint(msg.sender, s_tokenCounter);
         s_tokenCounter += 1;
     }
 
