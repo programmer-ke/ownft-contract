@@ -41,7 +41,13 @@ contract Ownft is ERC721Enumerable {
         returns (bytes memory)
     {
         bytes memory jsonMetadata = abi.encodePacked(
-            '{"name": "', name, '", "description": "', description, '", "image": "', imageUri, '"}'
+            '{"name": "',
+            Strings.escapeJSON(name),
+            '", "description": "',
+            Strings.escapeJSON(description),
+            '", "image": "',
+            Strings.escapeJSON(imageUri),
+            '"}'
         );
 
         return jsonMetadata;
