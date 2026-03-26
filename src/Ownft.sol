@@ -4,12 +4,13 @@ pragma solidity ^0.8.33;
 
 import {ERC721} from "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import {ERC721Enumerable} from "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
+import {ERC2981} from "@openzeppelin/contracts/token/common/ERC2981.sol";
 import {Base64} from "@openzeppelin/contracts/utils/Base64.sol";
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 
 /// @title Ownft, an NFT contract
 /// @notice Allows anyone to mint their own NFT by supplying a URI to the NFT
-contract Ownft is ERC721Enumerable {
+contract Ownft is ERC721Enumerable, ERC2981 {
     struct NftMetadata {
         string description;
         string imageUri;
@@ -19,9 +20,10 @@ contract Ownft is ERC721Enumerable {
 
     constructor() ERC721("Ownft", "OFT") {}
 
-    function mintNft(string calldata description, string calldata imageUri) public {
+    function mintNft(string calldata description, string calldata imageUri, uint96 royaltyPercentage) public {
         s_tokenIdToNftMeta[s_tokenCounter] = NftMetadata({description: description, imageUri: imageUri});
         _safeMint(msg.sender, s_tokenCounter);
+        _setTokenRoyalty(s_tokenCounter, msg.sender, royaltyPercentage);
         s_tokenCounter += 1;
     }
 
@@ -33,6 +35,10 @@ contract Ownft is ERC721Enumerable {
             Base64.encode(createMetadataJson(nftName, nftMetadata.description, nftMetadata.imageUri));
         string memory metadataUri = string.concat(_jsonB64BaseUri(), encodedMetadata);
         return metadataUri;
+    }
+
+    function supportsInterface(bytes4 interfaceId) public view override(ERC721Enumerable, ERC2981) returns (bool) {
+        return super.supportsInterface(interfaceId);
     }
 
     function createMetadataJson(string memory name, string memory description, string memory imageUri)
