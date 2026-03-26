@@ -22,10 +22,11 @@ contract OwnftTest is Test {
     function testCanMintToken() public {
         string memory description = "My NFT Description";
         string memory imageUri = "https://ipfs.io/ipfs/someipfscid";
+        uint96 royaltyPercentage = 500; // basis points units i.e. 5%
         vm.prank(USER);
 
         // mint nft
-        ownft.mintNft(description, imageUri);
+        ownft.mintNft(description, imageUri, royaltyPercentage);
 
         // supply should have increased
         assertEq(ownft.totalSupply(), 1);
@@ -47,6 +48,7 @@ contract OwnftTest is Test {
         string memory description = "My NFT Description";
         string memory imageUri = "https://ipfs.io/ipfs/someipfscid";
         string memory name = "Ownft #0";
+        uint96 royaltyPercentage = 500;
 
         // prepare the expected b64 encoded NFT Metadata Uri
         string memory encodedMetadata = Base64.encode(ownft.createMetadataJson(name, description, imageUri));
@@ -56,7 +58,7 @@ contract OwnftTest is Test {
 
         // mint nft and retrieve Uri
         vm.prank(USER);
-        ownft.mintNft(description, imageUri);
+        ownft.mintNft(description, imageUri, royaltyPercentage);
         string memory tokenMetadataUri = ownft.tokenURI(0);
 
         assertEq(keccak256(bytes(tokenMetadataUri)), keccak256(bytes(expectedMetadataUri)));
