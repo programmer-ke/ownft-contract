@@ -7,9 +7,12 @@ import {Ownft} from "src/Ownft.sol";
 import {Base64} from "@openzeppelin/contracts/utils/Base64.sol";
 
 contract OwnftTest is Test {
+    event MetadataUpdate(uint256 _tokenId); // emitted for token metadata updates (ERC4906)
+
     Ownft public ownft;
 
     address USER = makeAddr("user");
+    address OTHERUSER = makeAddr("otheruser");
 
     function setUp() public {
         ownft = new Ownft();
@@ -67,5 +70,77 @@ contract OwnftTest is Test {
     function testTokenURIRevertsIfTokenNotMinted() public {
         vm.expectRevert();
         ownft.tokenURI(1);
+    }
+
+    function testCanUpdateTokenDescription() public {
+        string memory originalDescription = "My NFT Description";
+        string memory imageUri = "https://ipfs.io/ipfs/someipfscid";
+        uint96 royaltyPercentage = 500; // basis points units i.e. 5%
+
+        // mint nft
+        vm.prank(USER);
+        ownft.mintNft(originalDescription, imageUri, royaltyPercentage);
+
+        (string memory storedDescription,) = ownft.getNftMetadata(0);
+        assertEq(originalDescription, storedDescription);
+
+        // update description
+        string memory newDescription = "My NFT doing awesome thing";
+
+        vm.prank(USER);
+
+        vm.expectEmit(false, false, false, true);
+        emit MetadataUpdate(0);
+
+        ownft.updateTokenDescription(0, newDescription);
+
+        // confirm changes
+        (storedDescription,) = ownft.getNftMetadata(0);
+        assertEq(newDescription, storedDescription);
+        assertNotEq(originalDescription, storedDescription);
+    }
+
+    function testOnlyOwnerCanUpdateDescription() public {
+        string memory originalDescription = "My NFT Description";
+        string memory imageUri = "https://ipfs.io/ipfs/someipfscid";
+        uint96 royaltyPercentage = 500; // basis points units i.e. 5%
+
+        // mint nft
+        vm.prank(USER);
+        ownft.mintNft(originalDescription, imageUri, royaltyPercentage);
+
+        // let other user attempt update
+        vm.prank(OTHERUSER);
+
+        vm.expectRevert(Ownft.Ownft__NotTokenOwner.selector);
+        ownft.updateTokenDescription(0, "Description from malicious user");
+    }
+
+    function testEmptyDescriptionReverts() public {
+        // minting with empty description should revert
+        string memory imageUri = "https://ipfs.io/ipfs/someipfscid";
+        uint96 royaltyPercentage = 500; // basis points units i.e. 5%
+        vm.prank(USER);
+
+        vm.expectRevert(Ownft.Ownft__InvalidDescription.selector);
+        ownft.mintNft("", imageUri, royaltyPercentage);
+
+        // updating description with empty string should revert
+        vm.prank(USER);
+        ownft.mintNft("some description", imageUri, royaltyPercentage);
+
+        vm.prank(USER);
+        vm.expectRevert(Ownft.Ownft__InvalidDescription.selector);
+        ownft.updateTokenDescription(0, "");
+    }
+
+    function testEmptyImageUriReverts() public {
+        // minting with empty imageUri should revert
+        string memory description = "my token";
+        uint96 royaltyPercentage = 500; // basis points units i.e. 5%
+        vm.prank(USER);
+
+        vm.expectRevert(Ownft.Ownft__InvalidImageUri.selector);
+        ownft.mintNft(description, "", royaltyPercentage);
     }
 }
