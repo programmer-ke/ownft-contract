@@ -143,4 +143,11 @@ contract OwnftTest is Test {
         vm.expectRevert(Ownft.Ownft__InvalidImageUri.selector);
         ownft.mintNft(description, "", royaltyPercentage);
     }
+
+    function testNonExistentTokenMetadataReverts() public {
+        vm.prank(USER);
+
+        vm.expectRevert();
+        ownft.getNftMetadata(2);
+    }
 }
