@@ -1,5 +1,9 @@
 # todo
 
+- [ ] serve from pinata gateway
+- [ ] Add owner attribute to nft metadata
+- [ ] Make mintnft payable
+
 # in progress
 
 
