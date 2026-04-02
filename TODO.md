@@ -5,10 +5,10 @@
 
 # in progress
 
-- [ ] Add owner attribute to nft metadata
 
 # done
 
+- [x] Add owner attribute to nft metadata
 - [x] Edit Ownft token description
   - See metadata updates: https://docs.opensea.io/docs/metadata-standards
 - [x] Ensure owner controls royalties
