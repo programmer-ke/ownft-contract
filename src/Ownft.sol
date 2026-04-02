@@ -120,7 +120,7 @@ contract Ownft is ERC721Enumerable, ERC2981, IERC4906 {
         if (previousOwner != address(0) && to != address(0)) {
             emit MetadataUpdate(tokenId);
         }
-	return previousOwner;
+        return previousOwner;
     }
 
     function _jsonB64BaseUri() private pure returns (string memory) {
