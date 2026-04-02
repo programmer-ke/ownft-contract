@@ -115,6 +115,14 @@ contract Ownft is ERC721Enumerable, ERC2981, IERC4906 {
         return jsonMetadata;
     }
 
+    function _update(address to, uint256 tokenId, address auth) internal override returns (address) {
+        address previousOwner = super._update(to, tokenId, auth);
+        if (previousOwner != address(0) && to != address(0)) {
+            emit MetadataUpdate(tokenId);
+        }
+	return previousOwner;
+    }
+
     function _jsonB64BaseUri() private pure returns (string memory) {
         return "data:application/json;base64,";
     }

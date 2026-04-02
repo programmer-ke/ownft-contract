@@ -151,4 +151,22 @@ contract OwnftTest is Test {
         vm.expectRevert();
         ownft.getNftMetadata(2);
     }
+
+    function testTokenTransferEmitsMetadataUpdate() public {
+        string memory description = "My NFT Description";
+        string memory imageUri = "https://ipfs.io/ipfs/someipfscid";
+        uint96 royaltyPercentage = 500; // basis points units i.e. 5%
+
+        // mint nft
+        vm.prank(USER);
+        ownft.mintNft(description, imageUri, royaltyPercentage);
+
+        // transfer token to new user
+        vm.prank(USER);
+
+        vm.expectEmit(false, false, false, true);
+        emit MetadataUpdate(0);
+
+        ownft.safeTransferFrom(USER, OTHERUSER, 0);
+    }
 }
