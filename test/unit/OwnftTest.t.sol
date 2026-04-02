@@ -39,10 +39,11 @@ contract OwnftTest is Test {
         string memory description = "My NFT Description";
         string memory imageUri = "https://ipfs.io/ipfs/someipfscid";
         string memory name = "Ownft #123";
+        console.log("user address", USER);
         string memory expectedJson =
-            '{"name": "Ownft #123", "description": "My NFT Description", "image": "https://ipfs.io/ipfs/someipfscid"}';
+            '{"name": "Ownft #123", "description": "My NFT Description", "image": "https://ipfs.io/ipfs/someipfscid", "owner": "0x6ca6d1e2d5347bfab1d91e883f1915560e09129d"}';
 
-        bytes memory jsonMetadata = ownft.createMetadataJson(name, description, imageUri);
+        bytes memory jsonMetadata = ownft.createMetadataJson(name, description, imageUri, USER);
 
         assertEq(keccak256(bytes(expectedJson)), keccak256(jsonMetadata));
     }
@@ -54,7 +55,7 @@ contract OwnftTest is Test {
         uint96 royaltyPercentage = 500;
 
         // prepare the expected b64 encoded NFT Metadata Uri
-        string memory encodedMetadata = Base64.encode(ownft.createMetadataJson(name, description, imageUri));
+        string memory encodedMetadata = Base64.encode(ownft.createMetadataJson(name, description, imageUri, USER));
         string memory expectedMetadataUri = string(abi.encodePacked("data:application/json;base64,", encodedMetadata));
 
         console.log(expectedMetadataUri);
@@ -149,5 +150,23 @@ contract OwnftTest is Test {
 
         vm.expectRevert();
         ownft.getNftMetadata(2);
+    }
+
+    function testTokenTransferEmitsMetadataUpdate() public {
+        string memory description = "My NFT Description";
+        string memory imageUri = "https://ipfs.io/ipfs/someipfscid";
+        uint96 royaltyPercentage = 500; // basis points units i.e. 5%
+
+        // mint nft
+        vm.prank(USER);
+        ownft.mintNft(description, imageUri, royaltyPercentage);
+
+        // transfer token to new user
+        vm.prank(USER);
+
+        vm.expectEmit(false, false, false, true);
+        emit MetadataUpdate(0);
+
+        ownft.safeTransferFrom(USER, OTHERUSER, 0);
     }
 }

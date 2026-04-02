@@ -9,6 +9,7 @@ import {IERC4906} from "@openzeppelin/contracts/interfaces/IERC4906.sol";
 import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 import {Base64} from "@openzeppelin/contracts/utils/Base64.sol";
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
+import {console} from "forge-std/console.sol";
 
 /// @title Ownft, an NFT contract
 /// @notice Allows anyone to mint their own NFT by supplying a URI to the NFT
@@ -72,7 +73,7 @@ contract Ownft is ERC721Enumerable, ERC2981, IERC4906 {
         NftMetadata storage nftMetadata = s_tokenIdToNftMeta[tokenId];
         string memory nftName = string.concat(name(), " #", Strings.toString(tokenId));
         string memory encodedMetadata =
-            Base64.encode(createMetadataJson(nftName, nftMetadata.description, nftMetadata.imageUri));
+            Base64.encode(createMetadataJson(nftName, nftMetadata.description, nftMetadata.imageUri, ownerOf(tokenId)));
         string memory metadataUri = string.concat(_jsonB64BaseUri(), encodedMetadata);
         return metadataUri;
     }
@@ -94,7 +95,7 @@ contract Ownft is ERC721Enumerable, ERC2981, IERC4906 {
     }
 
     /// @dev Returns a properly formatted token metadata JSON
-    function createMetadataJson(string memory name, string memory description, string memory imageUri)
+    function createMetadataJson(string memory name, string memory description, string memory imageUri, address owner)
         public
         pure
         returns (bytes memory)
@@ -106,10 +107,20 @@ contract Ownft is ERC721Enumerable, ERC2981, IERC4906 {
             Strings.escapeJSON(description),
             '", "image": "',
             Strings.escapeJSON(imageUri),
+            '", "owner": "',
+            Strings.toHexString(owner),
             '"}'
         );
 
         return jsonMetadata;
+    }
+
+    function _update(address to, uint256 tokenId, address auth) internal override returns (address) {
+        address previousOwner = super._update(to, tokenId, auth);
+        if (previousOwner != address(0) && to != address(0)) {
+            emit MetadataUpdate(tokenId);
+        }
+        return previousOwner;
     }
 
     function _jsonB64BaseUri() private pure returns (string memory) {
