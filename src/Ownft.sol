@@ -9,14 +9,16 @@ import {IERC4906} from "@openzeppelin/contracts/interfaces/IERC4906.sol";
 import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 import {Base64} from "@openzeppelin/contracts/utils/Base64.sol";
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {console} from "forge-std/console.sol";
 
 /// @title Ownft, an NFT contract
 /// @notice Allows anyone to mint their own NFT by supplying a URI to the NFT
-contract Ownft is ERC721Enumerable, ERC2981, IERC4906 {
+contract Ownft is ERC721Enumerable, ERC2981, IERC4906, Ownable {
     error Ownft__InvalidDescription();
     error Ownft__InvalidImageUri();
     error Ownft__NotTokenOwner();
+    error Ownft__FundsTransferFailed();
 
     struct NftMetadata {
         string description;
@@ -27,14 +29,23 @@ contract Ownft is ERC721Enumerable, ERC2981, IERC4906 {
     uint256 private s_tokenCounter;
     mapping(uint256 => NftMetadata) private s_tokenIdToNftMeta;
 
-    constructor() ERC721("Ownft", "OFT") {}
+    constructor() ERC721("Ownft", "OFT") Ownable(msg.sender) {}
+
+    // @notice Allow contract owner to withdraw funds
+    function withdrawFunds() external onlyOwner {
+        uint256 balance = address(this).balance;
+        (bool success,) = msg.sender.call{value: balance}("");
+        if (!success) {
+            revert Ownft__FundsTransferFailed();
+        }
+    }
 
     /// @notice Mint an NFT by supplying an image URI
     /// @param description A text description of the NFT content
     /// @param imageUri A URI of the NFT image
     /// @param royaltyBps Royalty in basis points (500 = 5%)
     /// @dev reverts if description or imageUri is empty
-    function mintNft(string calldata description, string calldata imageUri, uint96 royaltyBps) public {
+    function mintNft(string calldata description, string calldata imageUri, uint96 royaltyBps) public payable {
         if (!(bytes(description).length > 0)) {
             revert Ownft__InvalidDescription();
         }

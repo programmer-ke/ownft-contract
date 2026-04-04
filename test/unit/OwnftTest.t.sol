@@ -13,9 +13,13 @@ contract OwnftTest is Test {
 
     address USER = makeAddr("user");
     address OTHERUSER = makeAddr("otheruser");
+    uint256 STARTING_BALANCE = 1 ether;
+
+    receive() external payable {}
 
     function setUp() public {
         ownft = new Ownft();
+        vm.deal(USER, STARTING_BALANCE);
     }
 
     function testInitialSupply() public view {
@@ -33,6 +37,68 @@ contract OwnftTest is Test {
 
         // supply should have increased
         assertEq(ownft.totalSupply(), 1);
+    }
+
+    function testCanMintTokenWithFunds() public {
+        string memory description = "My NFT Description";
+        string memory imageUri = "https://ipfs.io/ipfs/someipfscid";
+        uint96 royaltyPercentage = 500; // basis points units i.e. 5%
+        vm.prank(USER);
+
+        // mint nft
+        ownft.mintNft{value: 0.1 ether}(description, imageUri, royaltyPercentage);
+
+        // supply should have increased
+        assertEq(ownft.totalSupply(), 1);
+    }
+
+    function testContractOwnerCanWithdrawFunds() public {
+        string memory description = "My NFT Description";
+        string memory imageUri = "https://ipfs.io/ipfs/someipfscid";
+        uint96 royaltyPercentage = 500; // basis points units i.e. 5%
+        vm.prank(USER);
+
+        // mint nft
+        ownft.mintNft{value: 0.1 ether}(description, imageUri, royaltyPercentage);
+
+        // withdraw funds
+        assertEq(address(ownft).balance, 0.1 ether);
+
+        // test contract is owner
+        uint256 balanceBefore = address(this).balance;
+        ownft.withdrawFunds();
+
+        // confirm withdrawn
+        assertEq(address(this).balance - balanceBefore, 0.1 ether);
+        assertEq(address(ownft).balance, 0);
+    }
+
+    function testNoneOwnerCannotWithdrawFunds() public {
+        string memory description = "My NFT Description";
+        string memory imageUri = "https://ipfs.io/ipfs/someipfscid";
+        uint96 royaltyPercentage = 500; // basis points units i.e. 5%
+        vm.prank(USER);
+
+        // mint nft
+        ownft.mintNft{value: 0.1 ether}(description, imageUri, royaltyPercentage);
+
+        // withdraw funds
+        assertEq(address(ownft).balance, 0.1 ether);
+
+        // minter should not be able to withdraw funds
+        vm.prank(USER);
+
+        vm.expectRevert();
+        ownft.withdrawFunds();
+
+        // other user should not be able to withdras funds
+        vm.prank(OTHERUSER);
+
+        vm.expectRevert();
+        ownft.withdrawFunds();
+
+        // but owner (test contract) should be able to withdraw
+        ownft.withdrawFunds();
     }
 
     function testValidMetadataJsonCreated() public view {
