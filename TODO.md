@@ -1,13 +1,11 @@
 # todo
 
-- [ ] serve from pinata gateway
-
 # in progress
 
-- [>] Make mintnft payable
 
 # done
 
+- [x] Make mintnft payable
 - [x] Add owner attribute to nft metadata
 - [x] Edit Ownft token description
   - See metadata updates: https://docs.opensea.io/docs/metadata-standards
