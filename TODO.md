@@ -1,10 +1,10 @@
 # todo
 
 - [ ] serve from pinata gateway
-- [ ] Make mintnft payable
 
 # in progress
 
+- [>] Make mintnft payable
 
 # done
 
