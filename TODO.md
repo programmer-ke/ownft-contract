@@ -1,11 +1,11 @@
 # todo
 
-- [ ] Set upper limit to royalty pct
 - [ ] Custom event on minting nft (with nft uri)
 - [ ] A look at the security audit
 
 # in progress
 
+- [ ] Set upper limit to royalty pct
 
 # done
 

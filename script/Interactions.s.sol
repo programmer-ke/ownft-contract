@@ -8,10 +8,12 @@ import {Ownft} from "src/Ownft.sol";
 import {BasicNft} from "src/BasicNft.sol";
 
 contract MintOwnft is Script {
-    string public constant GIF = "https://ipfs.io/ipfs/bafybeiehuuwijco3dgblpaq56isbrum32gtjd6neaewj322c5ptjp5vdjy";
+    string public constant GIF =
+        "https://ipfs.io/ipfs/bafybeiehuuwijco3dgblpaq56isbrum32gtjd6neaewj322c5ptjp5vdjy";
 
     function run() external {
-        address mostRecentlyDeployed = DevOpsTools.get_most_recent_deployment("Ownft", block.chainid);
+        address mostRecentlyDeployed =
+            DevOpsTools.get_most_recent_deployment("Ownft", block.chainid);
         mintNftOnContract(mostRecentlyDeployed);
     }
 
@@ -30,7 +32,8 @@ contract MintBasicNft is Script {
         "ipfs://bafybeig37ioir76s7mg5oobetncojcm3c3hxasyd4rvid4jqhy4gkaheg4/?filename=0-PUG.json";
 
     function run() external {
-        address mostRecentlyDeployed = DevOpsTools.get_most_recent_deployment("BasicNft", block.chainid);
+        address mostRecentlyDeployed =
+            DevOpsTools.get_most_recent_deployment("BasicNft", block.chainid);
         mintNftOnContract(mostRecentlyDeployed);
     }
 

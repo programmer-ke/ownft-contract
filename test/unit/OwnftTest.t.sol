@@ -121,8 +121,10 @@ contract OwnftTest is Test {
         uint96 royaltyPercentage = 500;
 
         // prepare the expected b64 encoded NFT Metadata Uri
-        string memory encodedMetadata = Base64.encode(ownft.createMetadataJson(name, description, imageUri, USER));
-        string memory expectedMetadataUri = string(abi.encodePacked("data:application/json;base64,", encodedMetadata));
+        string memory encodedMetadata =
+            Base64.encode(ownft.createMetadataJson(name, description, imageUri, USER));
+        string memory expectedMetadataUri =
+            string(abi.encodePacked("data:application/json;base64,", encodedMetadata));
 
         console.log(expectedMetadataUri);
 
