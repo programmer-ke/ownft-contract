@@ -254,4 +254,17 @@ contract OwnftTest is Test {
         vm.prank(USER);
         ownft.mintNft(description, imageUri, royaltyPercentage);
     }
+
+    function testCustomEventWithURIOnMinting() public {
+        // Given valid minting arguments
+        uint96 royaltyPercentage = 500;
+        string memory description = "My NFT Description";
+        string memory imageUri = "https://ipfs.io/ipfs/someipfscid";
+
+        // When a user successfully mints an nft, then the image URI is emitted in an event
+        vm.expectEmit(true, true, false, true);
+        emit Ownft.NFTMinted(0, imageUri, description, royaltyPercentage);
+        vm.prank(USER);
+        ownft.mintNft(description, imageUri, royaltyPercentage);
+    }
 }

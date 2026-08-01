@@ -1,14 +1,12 @@
 # todo
 
-- [ ] Custom event on minting nft (with nft uri)
 - [ ] A look at the security audit
 
 # in progress
 
-
-
 # done
 
+- [x] Custom event on minting nft (with nft uri)
 - [x] Set upper limit to royalty pct
 - [x] Make mintnft payable
 - [x] Add owner attribute to nft metadata

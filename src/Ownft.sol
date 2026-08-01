@@ -33,6 +33,10 @@ contract Ownft is ERC721Enumerable, ERC2981, IERC4906, Ownable {
     uint256 private s_tokenCounter;
     mapping(uint256 => NftMetadata) private s_tokenIdToNftMeta;
 
+    event NFTMinted(
+        uint256 indexed tokenId, string indexed imageUri, string description, uint96 royaltyBps
+    );
+
     constructor() ERC721("Ownft", "OFT") Ownable(msg.sender) {}
 
     // @notice Allow contract owner to withdraw funds
@@ -67,8 +71,12 @@ contract Ownft is ERC721Enumerable, ERC2981, IERC4906, Ownable {
 
         s_tokenIdToNftMeta[s_tokenCounter] =
             NftMetadata({description: description, imageUri: imageUri});
+
         _safeMint(msg.sender, s_tokenCounter);
         _setTokenRoyalty(s_tokenCounter, msg.sender, royaltyBps);
+
+        emit NFTMinted(s_tokenCounter, imageUri, description, royaltyBps);
+
         s_tokenCounter += 1;
     }
 
