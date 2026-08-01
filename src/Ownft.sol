@@ -113,6 +113,9 @@ contract Ownft is ERC721Enumerable, ERC2981, IERC4906, Ownable {
     }
 
     /// @notice Retrieves token description and imageUri associated with the token
+    /// @param tokenId the NFT token Id
+    /// @return Description of the Nft (unescaped and minter controlled)
+    /// @return ImageUri of the Nft (unescaped and minter controlled)
     function getNftMetadata(uint256 tokenId) public view returns (string memory, string memory) {
         _requireOwned(tokenId);
         NftMetadata storage nftMetadata = s_tokenIdToNftMeta[tokenId];

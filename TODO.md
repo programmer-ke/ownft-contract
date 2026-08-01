@@ -1,11 +1,10 @@
 # todo
 
-- [ ] A look at the security audit
-
 # in progress
 
 # done
 
+- [x] A look at the security audit
 - [x] Custom event on minting nft (with nft uri)
 - [x] Set upper limit to royalty pct
 - [x] Make mintnft payable
