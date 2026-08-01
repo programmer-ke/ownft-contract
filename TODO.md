@@ -5,10 +5,11 @@
 
 # in progress
 
-- [ ] Set upper limit to royalty pct
+
 
 # done
 
+- [x] Set upper limit to royalty pct
 - [x] Make mintnft payable
 - [x] Add owner attribute to nft metadata
 - [x] Edit Ownft token description

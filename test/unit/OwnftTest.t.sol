@@ -3,7 +3,7 @@
 pragma solidity ^0.8.33;
 
 import {Test, console} from "forge-std/Test.sol";
-import {Ownft} from "src/Ownft.sol";
+import {Ownft, MAX_ROYALTY_BPS} from "src/Ownft.sol";
 import {Base64} from "@openzeppelin/contracts/utils/Base64.sol";
 
 contract OwnftTest is Test {
@@ -236,5 +236,22 @@ contract OwnftTest is Test {
         emit MetadataUpdate(0);
 
         ownft.safeTransferFrom(USER, OTHERUSER, 0);
+    }
+
+    function testOutOfRangeRoyaltyBpsRejected() public {
+        // Given royalty bps > max allowed
+        uint96 royaltyPercentage = MAX_ROYALTY_BPS + 1;
+
+        // When user tries to mint an nft, then minting reverts
+        string memory description = "My NFT Description";
+        string memory imageUri = "https://ipfs.io/ipfs/someipfscid";
+
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                Ownft.Ownft__InvalidRoyaltyBps.selector, MAX_ROYALTY_BPS + 1, MAX_ROYALTY_BPS
+            )
+        );
+        vm.prank(USER);
+        ownft.mintNft(description, imageUri, royaltyPercentage);
     }
 }

@@ -13,6 +13,8 @@ import {Base64} from "@openzeppelin/contracts/utils/Base64.sol";
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
+uint96 constant MAX_ROYALTY_BPS = 1000; // (1000 = 10%)
+
 /// @title Ownft, an NFT contract
 /// @notice Allows anyone to mint their own NFT by supplying a URI to the NFT
 contract Ownft is ERC721Enumerable, ERC2981, IERC4906, Ownable {
@@ -20,6 +22,7 @@ contract Ownft is ERC721Enumerable, ERC2981, IERC4906, Ownable {
     error Ownft__InvalidImageUri();
     error Ownft__NotTokenOwner();
     error Ownft__FundsTransferFailed();
+    error Ownft__InvalidRoyaltyBps(uint96 actual, uint96 max_allowed);
 
     struct NftMetadata {
         string description;
@@ -52,6 +55,10 @@ contract Ownft is ERC721Enumerable, ERC2981, IERC4906, Ownable {
     {
         if (!(bytes(description).length > 0)) {
             revert Ownft__InvalidDescription();
+        }
+
+        if (royaltyBps > MAX_ROYALTY_BPS) {
+            revert Ownft__InvalidRoyaltyBps(royaltyBps, MAX_ROYALTY_BPS);
         }
 
         if (!(bytes(imageUri).length > 0)) {
