@@ -72,10 +72,10 @@ contract Ownft is ERC721Enumerable, ERC2981, IERC4906, Ownable {
         s_tokenIdToNftMeta[s_tokenCounter] =
             NftMetadata({description: description, imageUri: imageUri});
 
+        emit NFTMinted(s_tokenCounter, imageUri, description, royaltyBps);
+
         _safeMint(msg.sender, s_tokenCounter);
         _setTokenRoyalty(s_tokenCounter, msg.sender, royaltyBps);
-
-        emit NFTMinted(s_tokenCounter, imageUri, description, royaltyBps);
 
         s_tokenCounter += 1;
     }
