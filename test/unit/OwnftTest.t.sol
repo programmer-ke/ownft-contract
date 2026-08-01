@@ -263,7 +263,7 @@ contract OwnftTest is Test {
 
         // When a user successfully mints an nft, then the image URI is emitted in an event
         vm.expectEmit(true, true, false, true);
-        emit Ownft.NFTMinted(0, imageUri, description, royaltyPercentage);
+        emit Ownft.NFTMinted(0, imageUri, description, royaltyPercentage, imageUri);
         vm.prank(USER);
         ownft.mintNft(description, imageUri, royaltyPercentage);
     }
