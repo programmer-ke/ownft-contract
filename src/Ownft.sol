@@ -3,13 +3,17 @@
 pragma solidity ^0.8.33;
 
 import {ERC721} from "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-import {ERC721Enumerable} from "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
+import {
+    ERC721Enumerable
+} from "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import {ERC2981} from "@openzeppelin/contracts/token/common/ERC2981.sol";
 import {IERC4906} from "@openzeppelin/contracts/interfaces/IERC4906.sol";
 import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 import {Base64} from "@openzeppelin/contracts/utils/Base64.sol";
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+
+uint96 constant MAX_ROYALTY_BPS = 1000; // (1000 = 10%)
 
 /// @title Ownft, an NFT contract
 /// @notice Allows anyone to mint their own NFT by supplying a URI to the NFT
@@ -18,6 +22,7 @@ contract Ownft is ERC721Enumerable, ERC2981, IERC4906, Ownable {
     error Ownft__InvalidImageUri();
     error Ownft__NotTokenOwner();
     error Ownft__FundsTransferFailed();
+    error Ownft__InvalidRoyaltyBps(uint96 actual, uint96 max_allowed);
 
     struct NftMetadata {
         string description;
@@ -27,6 +32,14 @@ contract Ownft is ERC721Enumerable, ERC2981, IERC4906, Ownable {
     bytes4 private constant IERC4906_INTERFACE_ID = bytes4(0x49064906);
     uint256 private s_tokenCounter;
     mapping(uint256 => NftMetadata) private s_tokenIdToNftMeta;
+
+    event NFTMinted(
+        uint256 indexed tokenId,
+        string indexed imageUri,
+        string description,
+        uint96 royaltyBps,
+        string rawImageUri
+    );
 
     constructor() ERC721("Ownft", "OFT") Ownable(msg.sender) {}
 
@@ -44,18 +57,30 @@ contract Ownft is ERC721Enumerable, ERC2981, IERC4906, Ownable {
     /// @param imageUri A URI of the NFT image
     /// @param royaltyBps Royalty in basis points (500 = 5%)
     /// @dev reverts if description or imageUri is empty
-    function mintNft(string calldata description, string calldata imageUri, uint96 royaltyBps) public payable {
+    function mintNft(string calldata description, string calldata imageUri, uint96 royaltyBps)
+        public
+        payable
+    {
         if (!(bytes(description).length > 0)) {
             revert Ownft__InvalidDescription();
+        }
+
+        if (royaltyBps > MAX_ROYALTY_BPS) {
+            revert Ownft__InvalidRoyaltyBps(royaltyBps, MAX_ROYALTY_BPS);
         }
 
         if (!(bytes(imageUri).length > 0)) {
             revert Ownft__InvalidImageUri();
         }
 
-        s_tokenIdToNftMeta[s_tokenCounter] = NftMetadata({description: description, imageUri: imageUri});
+        s_tokenIdToNftMeta[s_tokenCounter] =
+            NftMetadata({description: description, imageUri: imageUri});
+
+        emit NFTMinted(s_tokenCounter, imageUri, description, royaltyBps, imageUri);
+
         _safeMint(msg.sender, s_tokenCounter);
         _setTokenRoyalty(s_tokenCounter, msg.sender, royaltyBps);
+
         s_tokenCounter += 1;
     }
 
@@ -82,13 +107,19 @@ contract Ownft is ERC721Enumerable, ERC2981, IERC4906, Ownable {
         _requireOwned(tokenId);
         NftMetadata storage nftMetadata = s_tokenIdToNftMeta[tokenId];
         string memory nftName = string.concat(name(), " #", Strings.toString(tokenId));
-        string memory encodedMetadata =
-            Base64.encode(createMetadataJson(nftName, nftMetadata.description, nftMetadata.imageUri, ownerOf(tokenId)));
+        string memory encodedMetadata = Base64.encode(
+            createMetadataJson(
+                nftName, nftMetadata.description, nftMetadata.imageUri, ownerOf(tokenId)
+            )
+        );
         string memory metadataUri = string.concat(_jsonB64BaseUri(), encodedMetadata);
         return metadataUri;
     }
 
     /// @notice Retrieves token description and imageUri associated with the token
+    /// @param tokenId the NFT token Id
+    /// @return Description of the Nft (unescaped and minter controlled)
+    /// @return ImageUri of the Nft (unescaped and minter controlled)
     function getNftMetadata(uint256 tokenId) public view returns (string memory, string memory) {
         _requireOwned(tokenId);
         NftMetadata storage nftMetadata = s_tokenIdToNftMeta[tokenId];
@@ -105,11 +136,12 @@ contract Ownft is ERC721Enumerable, ERC2981, IERC4906, Ownable {
     }
 
     /// @dev Returns a properly formatted token metadata JSON
-    function createMetadataJson(string memory name, string memory description, string memory imageUri, address owner)
-        public
-        pure
-        returns (bytes memory)
-    {
+    function createMetadataJson(
+        string memory name,
+        string memory description,
+        string memory imageUri,
+        address owner
+    ) public pure returns (bytes memory) {
         bytes memory jsonMetadata = abi.encodePacked(
             '{"name": "',
             Strings.escapeJSON(name),
@@ -125,7 +157,11 @@ contract Ownft is ERC721Enumerable, ERC2981, IERC4906, Ownable {
         return jsonMetadata;
     }
 
-    function _update(address to, uint256 tokenId, address auth) internal override returns (address) {
+    function _update(address to, uint256 tokenId, address auth)
+        internal
+        override
+        returns (address)
+    {
         address previousOwner = super._update(to, tokenId, auth);
         if (previousOwner != address(0) && to != address(0)) {
             emit MetadataUpdate(tokenId);

@@ -3,7 +3,7 @@
 pragma solidity ^0.8.33;
 
 import {Test, console} from "forge-std/Test.sol";
-import {Ownft} from "src/Ownft.sol";
+import {Ownft, MAX_ROYALTY_BPS} from "src/Ownft.sol";
 import {Base64} from "@openzeppelin/contracts/utils/Base64.sol";
 
 contract OwnftTest is Test {
@@ -121,8 +121,10 @@ contract OwnftTest is Test {
         uint96 royaltyPercentage = 500;
 
         // prepare the expected b64 encoded NFT Metadata Uri
-        string memory encodedMetadata = Base64.encode(ownft.createMetadataJson(name, description, imageUri, USER));
-        string memory expectedMetadataUri = string(abi.encodePacked("data:application/json;base64,", encodedMetadata));
+        string memory encodedMetadata =
+            Base64.encode(ownft.createMetadataJson(name, description, imageUri, USER));
+        string memory expectedMetadataUri =
+            string(abi.encodePacked("data:application/json;base64,", encodedMetadata));
 
         console.log(expectedMetadataUri);
 
@@ -234,5 +236,35 @@ contract OwnftTest is Test {
         emit MetadataUpdate(0);
 
         ownft.safeTransferFrom(USER, OTHERUSER, 0);
+    }
+
+    function testOutOfRangeRoyaltyBpsRejected() public {
+        // Given royalty bps > max allowed
+        uint96 royaltyPercentage = MAX_ROYALTY_BPS + 1;
+
+        // When user tries to mint an nft, then minting reverts
+        string memory description = "My NFT Description";
+        string memory imageUri = "https://ipfs.io/ipfs/someipfscid";
+
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                Ownft.Ownft__InvalidRoyaltyBps.selector, MAX_ROYALTY_BPS + 1, MAX_ROYALTY_BPS
+            )
+        );
+        vm.prank(USER);
+        ownft.mintNft(description, imageUri, royaltyPercentage);
+    }
+
+    function testCustomEventWithURIOnMinting() public {
+        // Given valid minting arguments
+        uint96 royaltyPercentage = 500;
+        string memory description = "My NFT Description";
+        string memory imageUri = "https://ipfs.io/ipfs/someipfscid";
+
+        // When a user successfully mints an nft, then the image URI is emitted in an event
+        vm.expectEmit(true, true, false, true);
+        emit Ownft.NFTMinted(0, imageUri, description, royaltyPercentage, imageUri);
+        vm.prank(USER);
+        ownft.mintNft(description, imageUri, royaltyPercentage);
     }
 }
