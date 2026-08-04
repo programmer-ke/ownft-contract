@@ -34,6 +34,10 @@ ifeq ($(findstring --network sepolia,$(ARGS)),--network sepolia)
 	NETWORK_ARGS := --rpc-url $(SEPOLIA_RPC_URL) --account $(ACCOUNT) --broadcast --verify --etherscan-api-key $(ETHERSCAN_API_KEY) -vvvv
 endif
 
+ifeq ($(findstring --network base,$(ARGS)),--network base)
+	NETWORK_ARGS := --rpc-url $(BASE_RPC_URL) --account $(BASE_ACCOUNT) --broadcast --verify --etherscan-api-key $(ETHERSCAN_API_KEY) -vvvv
+endif
+
 deploy:
 	@forge script script/DeployOwnft.s.sol:DeployOwnft $(NETWORK_ARGS)
 

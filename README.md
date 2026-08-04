@@ -42,14 +42,18 @@ $ anvil
 
 ### Deploy
 
+Steps to deploy to sepolia.
+
 Populate the .env file with the following variables:
 
 - `SEPOLIA_RPC_URL`
 - `ETHERSCAN_API_KEY`
 - `ACCOUNT` (name of the imported foundry account)
 
+Next, run:
+
 ```shell
-$ make deploy ARGS="--network <network-name>"
+$ make deploy ARGS="--network sepolia"
 ```
 
 After the deployment, find the contract address in:
@@ -59,6 +63,8 @@ After the deployment, find the contract address in:
 and the ABI:
 
 `out/Ownft.sol/Ownft.json`
+
+Update Makefile to deploy to any other network.
 
 ### Cast
 
