@@ -42,9 +42,23 @@ $ anvil
 
 ### Deploy
 
+Populate the .env file with the following variables:
+
+- `SEPOLIA_RPC_URL`
+- `ETHERSCAN_API_KEY`
+- `ACCOUNT` (name of the imported foundry account)
+
 ```shell
 $ make deploy ARGS="--network <network-name>"
 ```
+
+After the deployment, find the contract address in:
+
+`broadcast/DeployOwnft.s.sol/<network-id>/run-latest.json`
+
+and the ABI:
+
+`out/Ownft.sol/Ownft.json`
 
 ### Cast
 
