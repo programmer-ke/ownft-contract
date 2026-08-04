@@ -13,3 +13,4 @@ docs/
 # Dotenv file
 .env
 .wake
+.gas-snapshot

@@ -1,6 +1,7 @@
 ## OwnNFT Contract
 
-Upload your own NFT.
+A contract that allows anyone to upload and manage their own NFT
+across marketplaces.
 
 
 ## Development
@@ -42,7 +43,7 @@ $ anvil
 ### Deploy
 
 ```shell
-$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
+$ make deploy ARGS="--network <network-name>"
 ```
 
 ### Cast
