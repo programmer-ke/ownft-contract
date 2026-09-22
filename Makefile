@@ -38,6 +38,10 @@ ifeq ($(findstring --network base,$(ARGS)),--network base)
 	NETWORK_ARGS := --rpc-url $(BASE_RPC_URL) --account $(BASE_ACCOUNT) --broadcast --verify --etherscan-api-key $(ETHERSCAN_API_KEY) -vvvv
 endif
 
+ifeq ($(findstring --network robinhood,$(ARGS)),--network robinhood)
+	NETWORK_ARGS := --rpc-url $(ROBINHOOD_RPC_URL) --account $(ROBINHOOD_ACCOUNT) --broadcast --verify --etherscan-api-key $(ETHERSCAN_API_KEY) -vvvv
+endif
+
 deploy:
 	@forge script script/DeployOwnft.s.sol:DeployOwnft $(NETWORK_ARGS)
 
